@@ -2,6 +2,10 @@ from flask import request
 from ..modelos import db, Usuario, UsuarioSchema, Tarea, TareaSchema
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
+from flask_jwt_extended import jwt_required, create_access_token
+from sqlalchemy import select, exists
+
+
 
 usuario_schema = UsuarioSchema()
 tarea_schema = TareaSchema()
@@ -18,23 +22,43 @@ class VistaTareas(Resource):
 
 
 class VistaLogIn(Resource):
+#Recuperar token para hacer sesion de cuenta exitoso
+#Modificado JIA
     def post(self):
         u_email = request.json["email"]
         u_contrasena = request.json["contrasena"]
-        usuario = Usuario.query.filter_by(email=u_email, contrasena = u_contrasena).first() #Modificado
+        usuario = Usuario.query.filter_by(email=u_email, contrasena = u_contrasena).all() #Modificado
         if usuario:
-            #return 'Inicio de sesión exitoso', 200
-            return usuario_schema.dump(usuario)
+                token_de_acceso = create_access_token(identity=u_email)
+                id_usuario = usuario[0].id
+                return {'mensaje':'Inicio de sesión exitoso','token_de_acceso':token_de_acceso,'id_usuario':id_usuario}, 200
         else:
             return 'Correo o contraseña incorrectos', 401
 
 
-class VistaSignIn(Resource):    
+class VistaSignIn(Resource):
+    #Metodo POST: Añade un usuario a la DB
+    # Se debe asegurar que el mail no tiene misma cuenta y contraseña ingresada es la misma    
     def post(self):
-        nuevo_usuario = Usuario(nombre=request.json["nombre"], email=request.json["email"], contrasena=request.json["contrasena"])
-        db.session.add(nuevo_usuario)
-        db.session.commit()
-        return 'Usuario creado exitosamente', 201
+        u_nombre = request.json["nombre"]
+        u_email=request.json["email"]
+        u_contrasena=request.json["contrasena"]
+        u_conf_contrasena = request.json["conf_constrena"]
+        nuevo_usuario = Usuario(nombre=u_nombre, email=u_email,contrasena=u_contrasena)
+        #Revision si confirmacion contraseña es la misma 
+        if u_contrasena == u_conf_contrasena:
+        #Se revisa si el correo esta asociado a una cuenta
+            if db.session.query(Usuario.email).filter_by(email=nuevo_usuario.email).first() is None: 
+                token_de_acceso = create_access_token(identity = request.json['email'])
+                db.session.add(nuevo_usuario)
+                db.session.commit()
+                id_usuario = nuevo_usuario.id
+                return {'mensaje':'usuario creado exitosamente','token de acceso':token_de_acceso,'id_usuario':id_usuario},201
+            else: 
+                return {'mensaje': 'Correo ya registrado'}, 409
+        else: 
+            return {'mensaje':'Las contraseñas no coinciden'}, 409
+
 
     def put(self, id_usuario):
         usuario = Usuario.query.get_or_404(id_usuario)
