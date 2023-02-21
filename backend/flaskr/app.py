@@ -1,16 +1,18 @@
 from flaskr import create_app
 from flask_restful import Api
-from .modelos import db
-from .vistas import VistaSignIn, VistaLogIn, VistaTarea, VistaTareasUsuario
-from .vistas import VistaUsuarios, VistaTareas
+from .models import db
+from .views import VistaSignIn, VistaLogIn, VistaTasks, VistaTasksUser
 from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
+from celery import Celery
+
 
 
 app = create_app('default')
 app_context = app.app_context()
 app_context.push()
+
 
 db.init_app(app)
 db.create_all()
@@ -18,12 +20,10 @@ db.create_all()
 cors = CORS(app)
 
 api = Api(app)
-api.add_resource(VistaUsuarios, '/usuarios') #
-api.add_resource(VistaTareas, '/tareas') #
-api.add_resource(VistaSignIn, '/api/auth/signup')#Modificado -- JIA
-api.add_resource(VistaLogIn, '/api/auth/login')#Modificado -- JIA
-api.add_resource(VistaTareasUsuario, '/usuario/<int:id_usuario>/tareas')
-api.add_resource(VistaTarea, '/tarea/<int:id_tarea>')
+api.add_resource(VistaSignIn, '/api/auth/signup')
+api.add_resource(VistaLogIn, '/api/auth/login')
+api.add_resource(VistaTasks, '/api/tasks/<int:id_task>')
+api.add_resource(VistaTasksUser, '/api/tasks')
 
 #Inicializar la instancia de JWTManager para manejo de tokens
 jwt = JWTManager(app)
