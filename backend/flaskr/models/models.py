@@ -8,31 +8,31 @@ db = SQLAlchemy()
 
 
 class FileType(enum.Enum):
-   ZIP = 1
-   SEVENZIP = 2
-   TARBZ2 = 3
+    ZIP = 1
+    SEVENZIP = 2
+    TARBZ2 = 3
 
 class Status(enum.Enum):
-   UPLOADED = 1
-   PROCESSED = 2
+    UPLOADED = 1
+    PROCESSED = 2
 
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    fileName = db.Column(db.String(128),nullable = False)
-    newFormat = db.Column(db.Enum(FileType),nullable = False)
-    status = db.Column(db.Enum(Status),nullable = False)
+    fileName = db.Column(db.String(128), nullable = False)
+    newFormat = db.Column(db.Enum(FileType), nullable = False)
+    status = db.Column(db.Enum(Status), nullable = False)
     #Falta definir
     timeStamp = db.Column(db.DateTime, nullable = False, default=datetime.utcnow)
-    pathOriginal = db.Column(db.String(128),nullable = False)
-    pathConverted = db.Column(db.String(128),nullable = False)
+    pathOriginal = db.Column(db.String(128), nullable = False)
+    pathConverted = db.Column(db.String(128), nullable = False)
     user = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50),nullable = False)
-    email = db.Column(db.String(128),nullable = False)
-    password = db.Column(db.String(128),nullable = False)
+    username = db.Column(db.String(50), nullable = False)
+    email = db.Column(db.String(128), unique=True, nullable = False)
+    password = db.Column(db.String(128), nullable = False)
     #tasks = db.relationship('Task', cascade='all, delete, delete-orphan')
 
 class EnumADiccionario(fields.Field):
