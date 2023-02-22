@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import request
+from flask import request, send_from_directory
 from ..models import db, User, UserSchema, Task, TaskSchema
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
@@ -69,6 +69,10 @@ class VistaTasksUser(Resource):
             return 'No se envió un archivo para comprimir', 400
         
         file = request.files.get("file")
+
+        if '/' in file.filename:
+            return 'No se permiten subdirectorios', 400
+
         if file:
             filename = secure_filename(file.filename)
             file.save(os.path.join(UPLOAD_FOLDER, filename))  #app.config['UPLOAD_FOLDER']
@@ -99,7 +103,7 @@ class VistaTasksUser(Resource):
     def get(self):
         id_user = get_jwt_identity()
         user = User.query.get_or_404(id_user)
-        return [task_Schema.dump(ev) for ev in user.tasks]
+        return [task_Schema.dump(task) for task in user.tasks]
 
 
 class VistaTasks(Resource):
@@ -116,3 +120,21 @@ class VistaTasks(Resource):
         db.session.delete(task)
         db.session.commit()
         return '', 204
+    
+
+class VistaFiles(Resource):
+    @jwt_required()
+    #Metodo GET: recupera un archivo
+    #/api/files/<filename>
+    def get(self, filename):
+        id_user = get_jwt_identity()
+
+        #Se retorna el archivo si este existe
+        if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
+            #Se verifica que el archivo pertenezca a ese usuario
+            if db.session.query(Task.id).filter_by(user=id_user, fileName = filename).first() is None:
+                return "Usted no tiene permisos para descargar el archivo", 400
+            else:    
+                return send_from_directory(os.path.join(UPLOAD_FOLDER), filename, as_attachment=True)
+        else:
+            return "El archivo no existe", 400    

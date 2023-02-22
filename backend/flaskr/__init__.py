@@ -1,4 +1,5 @@
 from flask import Flask
+from datetime import timedelta
 
 def create_app(config_name):
     app = Flask(__name__)  
@@ -9,5 +10,6 @@ def create_app(config_name):
 
     #Frase secreta JWT
     app.config['JWT_SECRET_KEY']='frase-secreta'
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
     return app

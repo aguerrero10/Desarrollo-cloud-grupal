@@ -1,7 +1,7 @@
 from flaskr import create_app
 from flask_restful import Api
 from .models import db
-from .views import VistaSignUp, VistaLogIn, VistaTasks, VistaTasksUser
+from .views import VistaSignUp, VistaLogIn, VistaTasks, VistaTasksUser, VistaFiles
 from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
@@ -22,6 +22,7 @@ api.add_resource(VistaSignUp, '/api/auth/signup')
 api.add_resource(VistaLogIn, '/api/auth/login')
 api.add_resource(VistaTasks, '/api/tasks/<int:id_task>')
 api.add_resource(VistaTasksUser, '/api/tasks')
+api.add_resource(VistaFiles, '/api/files/<filename>')
 
 #Inicializar la instancia de JWTManager para manejo de tokens
 jwt = JWTManager(app)
