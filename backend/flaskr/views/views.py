@@ -1,11 +1,15 @@
+import os
+from datetime import datetime
 from flask import request
 from ..models import db, User, UserSchema, Task, TaskSchema
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
 from werkzeug.exceptions import HTTPException
+from werkzeug.utils import secure_filename
 
 
+UPLOAD_FOLDER = './'
 
 user_Schema = UserSchema()
 task_Schema = TaskSchema()
@@ -13,8 +17,8 @@ task_Schema = TaskSchema()
 
 
 class VistaLogIn(Resource):
-#Recuperar token para hacer sesion de cuenta exitoso
-#Modificado JIA
+    #/api/auth/login'
+    #Metodo POST: revisa las credenciales y recupera token para hacer inicio de sesion exitoso
     def post(self):
         u_username = request.json["username"]
         u_password = request.json["password"]
@@ -28,8 +32,9 @@ class VistaLogIn(Resource):
 
 
 class VistaSignUp(Resource):
-    #Metodo POST: Añade un usuario a la DB
-    # Se debe asegurar que el mail no tiene misma cuenta y contraseña ingresada es la misma    
+    #/api/auth/signup'
+    #Metodo POST: añade un usuario a la DB
+    #Se debe asegurar que el mail no tiene misma cuenta y contraseña ingresada es la misma    
     def post(self):
         u_username = request.json["username"]
         u_email=request.json["email"]
@@ -56,15 +61,26 @@ class VistaSignUp(Resource):
 
 class VistaTasksUser(Resource):
     @jwt_required()
-    #/api/tasks -> Acá va la adición creo
-    #Tiene que ser modificado de acuerdo a la entrega
-    #El tiempo se lee acá o se manda de antes
-    #Modificar
+    #/api/tasks
+    #Metodo POST: añade un archivo y tarea de compresion a la DB
     def post(self):
+        #Se revisa si se envió un archivo para comprimir
+        if 'file' not in request.files:
+            return 'No se envió un archivo para comprimir', 400
+        
+        file = request.files.get("file")
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))  #app.config['UPLOAD_FOLDER']
+        else:
+            return 'No se envió un archivo para comprimir', 400
+        
         print(get_jwt_identity())
-        new_Task = Task(fileName=request.json["fileName"], newFormat=request.json["newFormat"], 
-                            status=request.json["status"], time=request.json["time"],
-                            pathOriginal = request.json["pathOriginal"], pathConverted = request.json["pathConverted"])
+
+        #Se genera la tarea con los datos del archivo
+        new_Task = Task(fileName=filename, newFormat=request.form.get("newFormat"), 
+                        status='UPLOADED', timeStamp=datetime.now(),
+                        pathOriginal = UPLOAD_FOLDER, pathConverted = UPLOAD_FOLDER)
         id_user = get_jwt_identity()
         print(new_Task)
         user = User.query.get_or_404(id_user)
@@ -74,7 +90,7 @@ class VistaTasksUser(Resource):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return 'El usuario ya tiene una tarea con dicho nombre', 409
+            return '', 409
 
         return task_Schema.dump(new_Task)
 
