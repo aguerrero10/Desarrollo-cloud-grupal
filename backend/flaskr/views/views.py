@@ -110,20 +110,40 @@ class VistaTasks(Resource):
     #@jwt_required()
     #/api/tasks/<int:id_task>
     def get(self, id_task):
-        return task_Schema.dump(Task.query.get_or_404(id_task))
+        task = Task.query.get_or_404(id_task)
+        id_user = get_jwt_identity()
+        if id_user == task.user:
+            return task_Schema.dump(Task.query.get_or_404(id_task))
+        else: 
+            return 'No tiene autorizacion para consultar esta tarea',400
     
     @jwt_required()
     #/api/tasks/<int:id_task>
+    #Tambien se debe eliminar el archivo (original y el convertido), solo si estado es procesado
     def delete(self, id_task):
         task = Task.query.get_or_404(id_task)
 
         id_user = get_jwt_identity()
-        if id_user == task.user:
-            db.session.delete(task)
-            db.session.commit()
-            return '', 204
-        else: 
-            return 'No tiene permiso para borrar esta tarea',400
+        filename = task.fileName
+        #Se revisa si el archivo existe
+        if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
+            #Se verifica que el archivo pertenezca a ese usuario
+            if db.session.query(Task.id).filter_by(user=id_user, fileName = filename).first() is None:
+                return "Usted no tiene permisos para descargar el archivo", 400
+            else:
+                if task.status == 'PROCESSED': 
+                    #Eliminar archivos
+                    os.remove(os.path.join(UPLOAD_FOLDER), filename)
+                    #Falta agregar la eliminación del archivo procesado (Va a depender de su nuevo nombre)
+
+                    #Eliminar task de DB
+                    db.session.delete(task)
+                    db.session.commit()
+                    return '', 204
+                    return 
+                else: "El archivo no esta procesado",400
+        else:
+            return "El archivo no existe", 400  
 
     
 
