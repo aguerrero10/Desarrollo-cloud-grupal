@@ -16,9 +16,9 @@ class VistaLogIn(Resource):
 #Recuperar token para hacer sesion de cuenta exitoso
 #Modificado JIA
     def post(self):
-        u_email = request.json["email"]
+        u_username = request.json["username"]
         u_password = request.json["password"]
-        user = User.query.filter_by(email=u_email, password = u_password).all() 
+        user = User.query.filter_by(username=u_username, password = u_password).all()
         if user:
                 id_user = user[0].id
                 token_de_acceso = create_access_token(id_user)
@@ -33,18 +33,21 @@ class VistaSignUp(Resource):
     def post(self):
         u_username = request.json["username"]
         u_email=request.json["email"]
-        u_password=request.json["password"]
-        u_conf_password = request.json["conf_password"]
+        u_password=request.json["password1"]
+        u_conf_password = request.json["password2"]
         new_user = User(username=u_username, email=u_email,password=u_password)
         #Revision si confirmacion contraseña es la misma 
         if u_password == u_conf_password:
         #Se revisa si el correo esta asociado a una cuenta
-            if db.session.query(User.email).filter_by(email=new_user.email).first() is None: 
-                db.session.add(new_user)
-                db.session.commit()
-                id_user = new_user.id
-                token_de_acceso = create_access_token(identity = id_user)
-                return {'mensaje':'usuario creado exitosamente','token_de_acceso':token_de_acceso,'id_user':id_user},201
+            if db.session.query(User.email).filter_by(email=new_user.email).first() is None:
+                if db.session.query(User.username).filter_by(username=new_user.username).first() is None:
+                    db.session.add(new_user)
+                    db.session.commit()
+                    id_user = new_user.id
+                    token_de_acceso = create_access_token(identity = id_user)
+                    return {'mensaje':'usuario creado exitosamente','token_de_acceso':token_de_acceso,'id_user':id_user},201
+                else:
+                    return {'mensaje': 'Nombre de usuario ya registrado'}, 409
             else: 
                 return {'mensaje': 'Correo ya registrado'}, 409
         else: 
