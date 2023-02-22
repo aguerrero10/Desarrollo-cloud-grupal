@@ -27,7 +27,7 @@ class VistaLogIn(Resource):
             return 'Correo o contraseña incorrectos', 401
 
 
-class VistaSignIn(Resource):
+class VistaSignUp(Resource):
     #Metodo POST: Añade un usuario a la DB
     # Se debe asegurar que el mail no tiene misma cuenta y contraseña ingresada es la misma    
     def post(self):
@@ -65,7 +65,6 @@ class VistaTasksUser(Resource):
         id_user = get_jwt_identity()
         print(new_Task)
         user = User.query.get_or_404(id_user)
-        #Va a fallar por el error de tasks en modelos
         user.tasks.append(new_Task)
 
         try:
@@ -81,7 +80,7 @@ class VistaTasksUser(Resource):
     def get(self):
         id_user = get_jwt_identity()
         user = User.query.get_or_404(id_user)
-        return [task_Schema.dump(ev) for ev in user.tareas]
+        return [task_Schema.dump(ev) for ev in user.tasks]
 
 
 class VistaTasks(Resource):

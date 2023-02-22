@@ -1,11 +1,11 @@
 from flaskr import create_app
 from flask_restful import Api
 from .models import db
-from .views import VistaSignIn, VistaLogIn, VistaTasks, VistaTasksUser
+from .views import VistaSignUp, VistaLogIn, VistaTasks, VistaTasksUser
 from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
-from celery import Celery
+#from celery import Celery
 
 
 
@@ -20,7 +20,7 @@ db.create_all()
 cors = CORS(app)
 
 api = Api(app)
-api.add_resource(VistaSignIn, '/api/auth/signup')
+api.add_resource(VistaSignUp, '/api/auth/signup')
 api.add_resource(VistaLogIn, '/api/auth/login')
 api.add_resource(VistaTasks, '/api/tasks/<int:id_task>')
 api.add_resource(VistaTasksUser, '/api/tasks')
