@@ -114,12 +114,17 @@ class VistaTasks(Resource):
     
     @jwt_required()
     #/api/tasks/<int:id_task>
-    #Revisar metodo, solo lo puede hacer el usuario de la tarea
     def delete(self, id_task):
         task = Task.query.get_or_404(id_task)
-        db.session.delete(task)
-        db.session.commit()
-        return '', 204
+
+        id_user = get_jwt_identity()
+        if id_user == task.user:
+            db.session.delete(task)
+            db.session.commit()
+            return '', 204
+        else: 
+            return 'No tiene permiso para borrar esta tarea',400
+
     
 
 class VistaFiles(Resource):
