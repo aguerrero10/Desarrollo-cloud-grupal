@@ -12,4 +12,8 @@ def create_app(config_name):
     app.config['JWT_SECRET_KEY']='frase-secreta'
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
+    #Objeto Celery
+    #app.config['CELERY_BROKER_URL'] = 'redis://localhost:6360/0'
+    #app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6360/0'
+
     return app

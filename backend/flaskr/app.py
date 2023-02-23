@@ -5,13 +5,23 @@ from .views import VistaSignUp, VistaLogIn, VistaTasks, VistaTasksUser, VistaFil
 from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
-#from celery import Celery
+from celery import Celery
+
 
 app = create_app('default')
+
+# Config Celery
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6360/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6360/0'
+
 app_context = app.app_context()
 app_context.push()
 
+# Creando el objeto Celery
+celery = Celery(app, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 
+# DB
 db.init_app(app)
 db.create_all()
 
@@ -31,3 +41,8 @@ jwt = JWTManager(app)
 logging.basicConfig(level=logging.DEBUG, 
                     format='%(asctime)s %(levelname)s %(message)s',
                     handlers=[logging.StreamHandler()])
+
+@celery.task
+def sumar(x,y):
+    print('Se sumaron los números')
+    return 1 + 2

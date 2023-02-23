@@ -3,6 +3,7 @@ from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from marshmallow import fields
 import enum
 from datetime import datetime
+from sqlalchemy.orm import configure_mappers
 
 db = SQLAlchemy()
 
@@ -34,6 +35,8 @@ class User(db.Model):
     email = db.Column(db.String(128), unique=True, nullable = False)
     password = db.Column(db.String(128), nullable = False)
     tasks = db.relationship('Task', cascade='all, delete, delete-orphan')
+
+configure_mappers()
 
 class EnumADiccionario(fields.Field):
     def _serialize(self, value, attr, obj, **kwargs):
