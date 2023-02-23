@@ -34,7 +34,7 @@ class User(db.Model):
     username = db.Column(db.String(50), nullable = False)
     email = db.Column(db.String(128), unique=True, nullable = False)
     password = db.Column(db.String(128), nullable = False)
-    tasks = db.relationship('Task', cascade='all, delete, delete-orphan')
+    tasks = db.relationship('Task', cascade='all, delete, delete-orphan', lazy='dynamic')
 
 configure_mappers()
 

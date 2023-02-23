@@ -17,25 +17,6 @@ user_Schema = UserSchema()
 task_Schema = TaskSchema()
 
 
-
-class VistaLogIn(Resource):
-    #/api/auth/login'
-    #Metodo POST: revisa las credenciales y recupera token para hacer inicio de sesion exitoso
-    def post(self):
-        u_username = request.json["username"]
-        u_password = request.json["password"]
-        user = User.query.filter_by(username=u_username, password = u_password).all()
-        if user:
-                id_user = user[0].id
-                token_de_acceso = create_access_token(id_user)
-                #
-                #sumar.delay(1,2)
-                #
-                return {'mensaje':'Inicio de sesión exitoso','token_de_acceso':token_de_acceso,'id_user':id_user}, 200
-        else:
-            return 'Correo o contraseña incorrectos', 401
-
-
 class VistaSignUp(Resource):
     #/api/auth/signup'
     #Metodo POST: añade un usuario a la DB
@@ -64,16 +45,62 @@ class VistaSignUp(Resource):
             return {'mensaje':'Las contraseñas no coinciden'}, 409
 
 
+class VistaLogIn(Resource):
+    #/api/auth/login'
+    #Metodo POST: revisa las credenciales y recupera token para hacer inicio de sesion exitoso
+    def post(self):
+        u_username = request.json["username"]
+        u_password = request.json["password"]
+        user = User.query.filter_by(username=u_username, password = u_password).all()
+        if user:
+                id_user = user[0].id
+                token_de_acceso = create_access_token(id_user)
+                #
+                #sumar.delay(1,2)
+                #
+                return {'mensaje':'Inicio de sesión exitoso','token_de_acceso':token_de_acceso,'id_user':id_user}, 200
+        else:
+            return 'Correo o contraseña incorrectos', 401
+
+
 class VistaTasksUser(Resource):
+    @jwt_required()
+    #/api/tasks
+    #Metodo GET: recupera las tareas de un usuario
+    def get(self):
+        #Recuperar parametro order
+        order = request.args.get('order')
+        order = int(order) if order else 0
+        #Recuperar parametro max
+        max = request.args.get('max')
+        max = int(max) if max else -1
+
+        #Obtener tareas
+        id_user = get_jwt_identity()
+        user = User.query.get_or_404(id_user)
+        tasks = user.tasks
+
+        #tasks = Task.query.filter_by(user=id_user)
+        if order == 0:
+            tasks = tasks.order_by(Task.id)
+        else:
+            tasks = tasks.order_by(Task.id.desc())
+
+        if max > -1:
+            tasks = tasks.limit(max)
+
+        return [task_Schema.dump(task) for task in tasks]
+
+    
     @jwt_required()
     #/api/tasks
     #Metodo POST: añade un archivo y tarea de compresion a la DB
     def post(self):
         #Se revisa si se envió un archivo para comprimir
-        if 'file' not in request.files:
+        if 'fileName' not in request.files:
             return 'No se envió un archivo para comprimir', 400
         
-        file = request.files.get("file")
+        file = request.files.get("fileName")
 
         if '/' in file.filename:
             return 'No se permiten subdirectorios', 400
@@ -103,28 +130,23 @@ class VistaTasksUser(Resource):
 
         return task_Schema.dump(new_Task)
 
-    @jwt_required()
-    #/api/tasks
-    def get(self):
-        id_user = get_jwt_identity()
-        user = User.query.get_or_404(id_user)
-        return [task_Schema.dump(task) for task in user.tasks]
-
 
 class VistaTasks(Resource):
-    #@jwt_required()
+    @jwt_required()
     #/api/tasks/<int:id_task>
+    #Metodo GET: recupera los datos de una tarea específica
     def get(self, id_task):
         task = Task.query.get_or_404(id_task)
         id_user = get_jwt_identity()
         if id_user == task.user:
             return task_Schema.dump(Task.query.get_or_404(id_task))
         else: 
-            return 'No tiene autorizacion para consultar esta tarea',400
+            return 'No tiene autorizacion para consultar esta tarea', 400
+    
     
     @jwt_required()
     #/api/tasks/<int:id_task>
-    #Tambien se debe eliminar el archivo (original y el convertido), solo si estado es procesado
+    #Metodo DELETE: eliminar el archivo (original y el convertido), solo si estado es procesado
     def delete(self, id_task):
         task = Task.query.get_or_404(id_task)
 
@@ -134,7 +156,7 @@ class VistaTasks(Resource):
         if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
             #Se verifica que el archivo pertenezca a ese usuario
             if db.session.query(Task.id).filter_by(user=id_user, fileName = filename).first() is None:
-                return "Usted no tiene permisos para descargar el archivo", 400
+                return "Usted no tiene permisos para eliminar el archivo", 400
             else:
                 if task.status == 'PROCESSED': 
                     #Eliminar archivos
@@ -144,14 +166,12 @@ class VistaTasks(Resource):
                     #Eliminar task de DB
                     db.session.delete(task)
                     db.session.commit()
-                    return '', 204
-                    return 
-                else: "El archivo no esta procesado",400
+                    return '', 204 
+                else: "El archivo no esta procesado", 400
         else:
             return "El archivo no existe", 400  
 
     
-
 class VistaFiles(Resource):
     @jwt_required()
     #Metodo GET: recupera un archivo
