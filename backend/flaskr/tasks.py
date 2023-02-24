@@ -23,4 +23,5 @@ def test(arg):
 @app.task(name="compressfile")
 def compressfile():
     ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    print("test")
     pass
