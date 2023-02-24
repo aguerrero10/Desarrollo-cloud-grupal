@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from flask import request, send_from_directory
-from ..models import db, User, UserSchema, Task, TaskSchema
+from ..models import db, User, UserSchema, Task, TaskSchema, Status
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
@@ -113,6 +113,7 @@ class VistaTasksUser(Resource):
         print(get_jwt_identity())
 
         #Se genera la tarea con los datos del archivo
+        #Lo cambio por pruebas debe ser status='UPLOADED'
         new_Task = Task(fileName=filename, newFormat=request.form.get("newFormat"), 
                         status='UPLOADED', timeStamp=datetime.now(),
                         pathOriginal = UPLOAD_FOLDER, pathConverted = UPLOAD_FOLDER)
@@ -151,22 +152,28 @@ class VistaTasks(Resource):
 
         id_user = get_jwt_identity()
         filename = task.fileName
+        
+
         #Se revisa si el archivo existe
         if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
             #Se verifica que el archivo pertenezca a ese usuario
+            
             if db.session.query(Task.id).filter_by(user=id_user, fileName = filename).first() is None:
                 return "Usted no tiene permisos para eliminar el archivo", 400
             else:
-                if task.status == 'PROCESSED': 
+                if task.status == Status.PROCESSED: 
                     #Eliminar archivos
-                    os.remove(os.path.join(UPLOAD_FOLDER), filename)
+                    #Revisar 
+                    
+                    os.remove(os.path.join(UPLOAD_FOLDER, filename))
                     #Falta agregar la eliminación del archivo procesado (Va a depender de su nuevo nombre)
 
                     #Eliminar task de DB
                     db.session.delete(task)
                     db.session.commit()
-                    return '', 204 
-                else: "El archivo no esta procesado", 400
+                    return "", 204 
+                else: 
+                    return "El archivo no esta procesado", 400
         else:
             return "El archivo no existe", 400  
 
