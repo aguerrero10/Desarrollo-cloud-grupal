@@ -168,6 +168,8 @@ class VistaTasks(Resource):
                 print(os.path.join(task.pathConverted, new_filename))
                 print(os.path.isfile(os.path.join(task.pathConverted, new_filename)))
                 
+                ## Por corregir!
+                
                 if os.path.isfile(os.path.join(task.pathOriginal, filename)) and os.path.isfile(os.path.join(task.pathConverted, new_filename)):
                     #Eliminar archivos
                     os.remove(os.path.join(task.pathOriginal, filename))
