@@ -150,8 +150,8 @@ class VistaTasks(Resource):
         task = Task.query.get_or_404(id_task)
         id_user = get_jwt_identity()
         filename = task.fileName
-        # new_filename = filename.rsplit('.')[0] + '.' + task.newFormat.value
-        new_filename = filename + '.' + task.newFormat.value
+        new_filename = filename.rsplit('.')[0] + task.newFormat.value
+
         
         #Se verifica que el archivo pertenezca a ese usuario
         if id_user != task.user:
@@ -159,7 +159,9 @@ class VistaTasks(Resource):
         else:
             if task.status == Status.PROCESSED: 
                 #Se revisa si el archivo existe
-                
+                UPLOAD_FOLDER
+
+
                 # Validacion
                 print(os.path.join(task.pathOriginal, filename))
                 print(os.path.isfile(os.path.join(task.pathOriginal, filename)))
@@ -167,7 +169,7 @@ class VistaTasks(Resource):
                 print(os.path.join(task.pathConverted, new_filename))
                 print(os.path.isfile(os.path.join(task.pathConverted, new_filename)))
                 
-                ## Por corregir!
+                ## 
                 
                 if os.path.isfile(os.path.join(task.pathOriginal, filename)) and os.path.isfile(os.path.join(task.pathConverted, new_filename)):
                     #Eliminar archivos
@@ -181,6 +183,7 @@ class VistaTasks(Resource):
                 else:
                     return "El archivo no existe", 400
             else: 
+                
                 return "El archivo no esta procesado", 400
 
     

@@ -61,7 +61,8 @@ def compressfile(file_to_compress, ROOT_DIR, compression_type):
     
     if(compression_type == "ZIP"):
         try:
-            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(file_to_compress) + ".zip")
+            filename = file_to_compress.rsplit('.')[0]
+            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(filename) + ".zip")
             with zipfile.ZipFile(out_file, mode="w") as archive:
                 archive.write(source_file, basename(source_file), compress_type=zipfile.ZIP_DEFLATED)
         except zipfile.BadZipFile as error:
@@ -69,7 +70,8 @@ def compressfile(file_to_compress, ROOT_DIR, compression_type):
     
     elif (compression_type == "SEVENZIP"):
         try:
-            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(file_to_compress) + ".7z")
+            filename = file_to_compress.rsplit('.')[0]
+            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(filename) + ".7z")
             with py7zr.SevenZipFile(out_file, "w") as archive:
                 archive.writeall(source_file, basename(source_file))
         except py7zr.Bad7zFile as error:
@@ -77,7 +79,8 @@ def compressfile(file_to_compress, ROOT_DIR, compression_type):
     
     elif (compression_type == "TARBZ2"):
         try:
-            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(file_to_compress) + ".tar.bz2")
+            filename = file_to_compress.rsplit('.')[0]
+            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(filename) + ".tar.bz2")
             with tarfile.open(out_file, "w:bz2") as archive:
                 archive.add(source_file, basename(source_file))
         except tarfile.TarError as error:
