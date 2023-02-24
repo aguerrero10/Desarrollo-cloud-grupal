@@ -1,12 +1,28 @@
 const tarea={template:`
 <div>
+
 <button type="button"
-class="btn btn-primary m-2 fload-end"
+class="btn btn-primary fload-end"
 data-bs-toggle="modal"
 data-bs-target="#exampleModal"
 @click="addClick()">
  Nueva Tarea
 </button>
+
+<h2></h2>
+
+<div class="input-group mb-3">
+    <span class="input-group-text">Orden</span>
+    <select class="form-select" v-model="TareasOrden">
+        <option value="0">Ascendente</option>
+        <option value="1">Descendente</option>
+    </select>
+    <span class="input-group-text">Límite</span>
+    <input type="number" class="form-control" v-model="TareasLimite">
+    <button class="btn btn-secondary " type="button" id="button-addon2" @click="refreshData()">Aplicar</button>
+    <button class="btn btn-secondary " type="button" id="button-addon2" @click="clearFilter()">Limpiar</button>
+</div>
+
 <table class="table table-striped">
 <thead>
     <tr>
@@ -54,11 +70,14 @@ data-bs-target="#exampleModal"
                 <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
                 </svg>
             </button>
+
         </td>
     </tr>
 </tbody>
 </thead>
 </table>
+
+
 <div>
 <button type="button"
 class="btn btn-secondary m-2 fload-end"
@@ -66,6 +85,7 @@ class="btn btn-secondary m-2 fload-end"
  Cerrar sesión
 </button>
 </div>
+
 <div class="modal fade" id="exampleModal" tabindex="-1"
     aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -75,13 +95,16 @@ class="btn btn-secondary m-2 fload-end"
         <button type="button" class="btn-close" data-bs-dismiss="modal"
         aria-label="Close"></button>
     </div>
+
     <div class="modal-body">
-        <div class="mb-3">
+
+        <div class="mb-3" v-if="TareaId==0">
         <label for="formFile" class="form-label">Seleccionar archivo a comprimir</label>
         <!--input class="form-control" type="file" id="formFile" v-model="TareaName"-->
         <input class="form-control" type="file" id="formFile" ref="file" v-on:change="handleFileUpload()">
         </div>
-        <div class="input-group mb-3">
+
+        <div class="input-group mb-3" v-if="TareaId==0">
             <span class="input-group-text">Nuevo Formato</span>
             <select class="form-select" v-model="TareaNuevoFormato">
                 <option value="ZIP">ZIP</option>
@@ -89,19 +112,53 @@ class="btn btn-secondary m-2 fload-end"
                 <option value="TARBZ2">TARBZ2</option>
             </select>
         </div>
+
+        <div class="input-group mb-3" v-if="TareaId!=0">
+            <span class="input-group-text">Archivo</span>
+            <input type="text" class="form-control" v-model="TareaName" readonly>
+        </div>
+
+        <div class="input-group mb-3" v-if="TareaId!=0">
+            <span class="input-group-text">Nuevo formato</span>
+            <input type="text" class="form-control" v-model="TareaNuevoFormato" readonly>
+        </div>
+
+        <div class="input-group mb-3" v-if="TareaId!=0">
+            <span class="input-group-text">Fecha solicitud</span>
+            <input type="text" class="form-control" v-model="TareaFecha" readonly>
+        </div>
+
+        <div class="input-group mb-3" v-if="TareaId!=0">
+            <span class="input-group-text">Estado</span>
+            <input type="text" class="form-control" v-model="TareaEstado" readonly>
+        </div>
+
         <button type="button" @click="createClick()"
         v-if="TareaId==0" class="btn btn-primary">
         Crear tarea
         </button>
-        <button type="button" @click="downloadFile()"
-        v-if="TareaId!=0" class="btn btn-primary">
+
+        <button type="button" class="btn btn-primary m-2 fload-end" @click="downloadFile('ORIGINAL')"
+        v-if="TareaId!=0">
         Descargar original
         </button>
+
+        <!--PROCESSED, UPLOADED-->
+        <button type="button" class="btn btn-primary m-2 fload-end" @click="downloadFile('COMPRIMIDO')"
+        v-if="TareaId!=0 && TareaEstado=='PROCESSED'">
+        Descargar comprimido
+        </button>
+
     </div>
+
 </div>
 </div>
 </div>
+
+
 </div>
+
+
 `,
 
 data(){
@@ -111,10 +168,13 @@ data(){
         TareaId:0,
         TareaName:"",
         TareaNuevoFormato:"",
+        TareaNuevoFormatoValor:"",
         TareaEstado:"",
         TareaFecha:"",
         usuario:0,
         file:[],
+        TareasOrden:"",
+        TareasLimite:"",
 
         TareaNameFilter:"",
         TareaIdFilter:"",
@@ -126,7 +186,11 @@ methods:{
         this.file = this.$refs.file.files[0];
     },
     refreshData(){
-        axios.get(variables.API_URL+"tasks",{
+        const params = {}
+        if (this.TareasOrden != "") { params.order = this.TareasOrden }
+        if (this.TareasLimite != "") { params.max = this.TareasLimite }
+
+        axios.get(variables.API_URL+"tasks",{params,
             headers: {
                 'Authorization': 'Bearer '+ sessionStorage.getItem('access_token')
             }
@@ -141,6 +205,7 @@ methods:{
         this.TareaId=0;
         this.TareaName="";
         this.TareaNuevoFormato="";
+        this.TareaNuevoFormatoValor="";
         this.TareaEstado="";
         this.TareaFecha="";
         this.file=[];
@@ -151,6 +216,9 @@ methods:{
         this.TareaId=dep.id;
         this.TareaName=dep.fileName;
         this.TareaNuevoFormato=dep.newFormat.llave;
+        this.TareaNuevoFormatoValor=dep.newFormat.valor;
+        this.TareaEstado=dep.status.llave;
+        this.TareaFecha=dep.timeStamp;
     },
     createClick(){
         let formData = new FormData();
@@ -207,12 +275,12 @@ methods:{
             alert(error.response.data)
         });
     },
-    downloadFile(){
-        //const FileDownload = require('js-file-download');
-
-        //axios.get(variables.API_URL+"files/"+"Cronograma_AML_202310.pdf",{ 
-
-        download_filename = this.TareaName;
+    downloadFile(tipo_archivo){
+        if (tipo_archivo == 'COMPRIMIDO'){
+            download_filename = this.TareaName.split('.')[0] + this.TareaNuevoFormatoValor 
+        } else {
+            download_filename = this.TareaName;
+        }
         axios.get(variables.API_URL+"files/"+download_filename,{
             headers: {
                 'Authorization': 'Bearer '+ sessionStorage.getItem('access_token') 
@@ -225,7 +293,6 @@ methods:{
             var fileLink = document.createElement('a');
   
             fileLink.href = fileURL;
-            //fileLink.setAttribute('download', 'Cronograma_AML_202310.pdf');
             fileLink.setAttribute('download', download_filename);
             document.body.appendChild(fileLink);
             fileLink.click();
@@ -239,6 +306,11 @@ methods:{
     signupClick(){
         sessionStorage.setItem('usuario', 0);
         this.$router.push("/usuario");
+    },
+    clearFilter(){
+        this.TareasOrden = "";
+        this.TareasLimite = "";
+        this.refreshData();
     }
 
 },

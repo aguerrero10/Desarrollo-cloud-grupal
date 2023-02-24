@@ -139,13 +139,13 @@ class="btn btn-secondary m-2 fload-end"
         </button>
 
         <button type="button" class="btn btn-primary m-2 fload-end" @click="downloadFile('ORIGINAL')"
-        v-if="TareaId!=0" class="btn btn-primary">
+        v-if="TareaId!=0">
         Descargar original
         </button>
 
         <!--PROCESSED, UPLOADED-->
         <button type="button" class="btn btn-primary m-2 fload-end" @click="downloadFile('COMPRIMIDO')"
-        v-if="TareaId!=0 && TareaEstado=='PROCESSED'" class="btn btn-primary">
+        v-if="TareaId!=0 && TareaEstado=='PROCESSED'">
         Descargar comprimido
         </button>
 
@@ -168,6 +168,7 @@ data(){
         TareaId:0,
         TareaName:"",
         TareaNuevoFormato:"",
+        TareaNuevoFormatoValor:"",
         TareaEstado:"",
         TareaFecha:"",
         usuario:0,
@@ -204,6 +205,7 @@ methods:{
         this.TareaId=0;
         this.TareaName="";
         this.TareaNuevoFormato="";
+        this.TareaNuevoFormatoValor="";
         this.TareaEstado="";
         this.TareaFecha="";
         this.file=[];
@@ -214,6 +216,7 @@ methods:{
         this.TareaId=dep.id;
         this.TareaName=dep.fileName;
         this.TareaNuevoFormato=dep.newFormat.llave;
+        this.TareaNuevoFormatoValor=dep.newFormat.valor;
         this.TareaEstado=dep.status.llave;
         this.TareaFecha=dep.timeStamp;
     },
@@ -273,18 +276,11 @@ methods:{
         });
     },
     downloadFile(tipo_archivo){
-        //axios.get(variables.API_URL+"files/"+"Cronograma_AML_202310.pdf",{ 
         if (tipo_archivo == 'COMPRIMIDO'){
-            extension = ''
-            if (this.TareaNuevoFormato == 'ZIP') {extension = 'zip'}
-            else if (this.TareaNuevoFormato == 'SEVENZIP') {extension = '7z'}
-            else if (this.TareaNuevoFormato == 'TARBZ2') {extension = 'tar.bz2'}
-            download_filename = this.TareaName.split('.')[0] + '.' + extension //.toLowerCase()
+            download_filename = this.TareaName.split('.')[0] + this.TareaNuevoFormatoValor 
         } else {
             download_filename = this.TareaName;
         }
-
-        //download_filename = this.TareaName;
         axios.get(variables.API_URL+"files/"+download_filename,{
             headers: {
                 'Authorization': 'Bearer '+ sessionStorage.getItem('access_token') 
@@ -297,7 +293,6 @@ methods:{
             var fileLink = document.createElement('a');
   
             fileLink.href = fileURL;
-            //fileLink.setAttribute('download', 'Cronograma_AML_202310.pdf');
             fileLink.setAttribute('download', download_filename);
             document.body.appendChild(fileLink);
             fileLink.click();

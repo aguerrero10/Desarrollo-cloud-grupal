@@ -9,9 +9,9 @@ db = SQLAlchemy()
 
 
 class FileType(enum.Enum):
-    ZIP = 1
-    SEVENZIP = 2
-    TARBZ2 = 3
+    ZIP = '.zip'
+    SEVENZIP = '.7z'
+    TARBZ2 = '.tar.bz2'
 
 class Status(enum.Enum):
     UPLOADED = 1

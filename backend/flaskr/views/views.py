@@ -150,8 +150,8 @@ class VistaTasks(Resource):
         task = Task.query.get_or_404(id_task)
         id_user = get_jwt_identity()
         filename = task.fileName
-        # new_filename = filename.rsplit('.', 1)[0] + '.' + task.newFormat.name
-        new_filename = filename + '.' + task.newFormat.name
+        # new_filename = filename.rsplit('.')[0] + '.' + task.newFormat.value
+        new_filename = filename + '.' + task.newFormat.value
         
         #Se verifica que el archivo pertenezca a ese usuario
         if id_user != task.user:
@@ -190,16 +190,20 @@ class VistaFiles(Resource):
     #/api/files/<filename>
     def get(self, filename):
         id_user = get_jwt_identity()
+        user = User.query.get_or_404(id_user)
+        tasks = user.tasks
+        fname = filename.rsplit('.')[0]
 
-        #Se retorna el archivo si este existe
-        if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
-            #Se verifica que el archivo pertenezca a ese usuario
-            if db.session.query(Task.id).filter_by(user=id_user, fileName = filename).first() is None:
-                return "Usted no tiene permisos para descargar el archivo", 400
-            else:    
-                return send_from_directory(os.path.join(UPLOAD_FOLDER), filename, as_attachment=True)
+        #Se verifica que el archivo pertenezca a ese usuario
+        if tasks.filter(Task.fileName.like(fname + '.%')).first() is None:
+            return "Usted no tiene permisos para descargar el archivo", 400
         else:
-            return "El archivo no existe", 400
+            #Se retorna el archivo si este existe
+            if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
+                return send_from_directory(os.path.join(UPLOAD_FOLDER), filename, as_attachment=True)
+            else:
+                return "El archivo no existe", 400
+            
 
 class VistaFrontEnd(Resource):
     def __init__(self):
