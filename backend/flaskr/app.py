@@ -6,7 +6,7 @@ from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
 from apscheduler.schedulers.background import BackgroundScheduler
-from .tasks import sumar, compressfile
+from .tasks import sumar, compressfile, mail, enviarcorreo
 import os
 
 
@@ -20,6 +20,9 @@ db.create_all()
 
 cors = CORS(app)
 api = Api(app)
+
+# Mail
+mail.init_app(app)
 
 api.add_resource(VistaSignUp, '/api/auth/signup')
 api.add_resource(VistaLogIn, '/api/auth/login')
@@ -36,7 +39,7 @@ jwt = JWTManager(app)
 def calling_async():
     print("Trabajando...")
     sumar.delay()
-    
+
     #files = db.session.query(Task).all()
     #for file in files:
     #    print(file.status)

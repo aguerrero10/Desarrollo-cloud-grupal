@@ -5,11 +5,12 @@ import py7zr
 import os
 from os.path import basename
 
+from flask_mail import Mail, Message
+# Mail
+mail = Mail()
 
-
-#app = Celery( 'tasks' , broker = 'redis://localhost:6379/0')
-app = Celery( 'tasks' , broker = 'redis://localhost:6360/0')
-
+app = Celery( 'tasks' , broker = 'redis://localhost:6379/0')
+# app = Celery( 'tasks' , broker = 'redis://localhost:6360/0')
 
 @app.task(name="sumar")
 def sumar():
@@ -50,4 +51,12 @@ def compressfile(file_to_compress, ROOT_DIR, compression_type):
     else:
         print("Compression Type Unavailable")
 
+def enviarcorreo(correo_destino):
+    print('Enviando correo')
+    msg = Message(subject='Prueba 2!',
+                    recipients=[correo_destino],
+                    body = 'Se ha comprimido su archivo!'
+                    )
+    mail.send(msg)
+    
     
