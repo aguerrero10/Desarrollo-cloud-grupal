@@ -149,33 +149,29 @@ class VistaTasks(Resource):
     #Metodo DELETE: eliminar el archivo (original y el convertido), solo si estado es procesado
     def delete(self, id_task):
         task = Task.query.get_or_404(id_task)
-
         id_user = get_jwt_identity()
         filename = task.fileName
+        new_filename = filename.rsplit('.', 1)[0] + '.' + task.newFormat.name
         
-
-        #Se revisa si el archivo existe
-        if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
-            #Se verifica que el archivo pertenezca a ese usuario
-            
-            if db.session.query(Task.id).filter_by(user=id_user, fileName = filename).first() is None:
-                return "Usted no tiene permisos para eliminar el archivo", 400
-            else:
-                if task.status == Status.PROCESSED: 
+        #Se verifica que el archivo pertenezca a ese usuario
+        if id_user != task.user:
+            return "Usted no tiene permisos para ver esta tarea", 400
+        else:
+            if task.status == Status.PROCESSED: 
+                #Se revisa si el archivo existe
+                if os.path.isfile(os.path.join(task.pathOriginal, filename)) and os.path.isfile(os.path.join(task.pathConverted, new_filename)):
                     #Eliminar archivos
-                    #Revisar 
-                    
-                    os.remove(os.path.join(UPLOAD_FOLDER, filename))
-                    #Falta agregar la eliminación del archivo procesado (Va a depender de su nuevo nombre)
+                    os.remove(os.path.join(task.pathOriginal, filename))
+                    os.remove(os.path.join(task.pathConverted, new_filename))
 
                     #Eliminar task de DB
                     db.session.delete(task)
                     db.session.commit()
-                    return "", 204 
-                else: 
-                    return "El archivo no esta procesado", 400
-        else:
-            return "El archivo no existe", 400  
+                    return 'Archivo eliminado', 204 
+                else:
+                    return "El archivo no existe", 400
+            else: 
+                return "El archivo no esta procesado", 400
 
     
 class VistaFiles(Resource):
