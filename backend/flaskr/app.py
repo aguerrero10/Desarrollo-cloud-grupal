@@ -1,12 +1,19 @@
 from flaskr import create_app
 from flask_restful import Api
 from .models import db, Task, Status
-from .views import VistaSignUp, VistaLogIn, VistaTasks, VistaTasksUser, VistaFiles
+from .views import (
+    VistaSignUp, 
+    VistaLogIn, 
+    VistaTasks, 
+    VistaTasksUser, 
+    VistaFiles,
+    VistaFrontEnd
+)
 from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
 from apscheduler.schedulers.background import BackgroundScheduler
-from .tasks import sumar, compressfile, mail
+from .tasks import sumar, tareacompresion, mail
 import os
 
 
@@ -30,6 +37,9 @@ api.add_resource(VistaTasks, '/api/tasks/<int:id_task>')
 api.add_resource(VistaTasksUser, '/api/tasks')
 api.add_resource(VistaFiles, '/api/files/<filename>')
 
+# FrontEnd
+api.add_resource(VistaFrontEnd, '/')
+
 # Inicializar la instancia de JWTManager para manejo de tokens
 jwt = JWTManager(app)
 
@@ -39,13 +49,7 @@ jwt = JWTManager(app)
 def calling_async():
     print("Trabajando...")
     sumar.delay()
-
-    #files = db.session.query(Task).all()
-    #for file in files:
-    #    print(file.status)
-    #ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-    #compressfile.delay()
-
+    tareacompresion.delay()
 
 # Job que se ejecuta cada minuto para enviar a comprimir los archivos
 # Llama a la función "calling_async"

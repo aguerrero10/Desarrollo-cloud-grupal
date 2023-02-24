@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import request, send_from_directory
+from flask import request, send_from_directory, make_response, render_template
 from ..models import db, User, UserSchema, Task, TaskSchema, Status
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
@@ -9,8 +9,10 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 from ..tasks import sumar, compresion_correo
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-UPLOAD_FOLDER = './'
+UPLOAD_FOLDER = os.path.join(ROOT_DIR,'files/uploads/' )
+PROCESSED_FOLDER = os.path.join(ROOT_DIR,'files/compressed/' )
 
 user_Schema = UserSchema()
 task_Schema = TaskSchema()
@@ -54,10 +56,7 @@ class VistaLogIn(Resource):
         if user:
                 id_user = user[0].id
                 token_de_acceso = create_access_token(id_user)
-                # Llamado de tarea ascíncrona con Celery y Redis
-                sumar.delay()
-                compresion_correo()
-                #
+                
                 return {'mensaje':'Inicio de sesión exitoso','token_de_acceso':token_de_acceso,'id_user':id_user}, 200
         else:
             return 'Correo o contraseña incorrectos', 401
@@ -116,7 +115,7 @@ class VistaTasksUser(Resource):
         #Se genera la tarea con los datos del archivo
         new_Task = Task(fileName=filename, newFormat=request.form.get("newFormat"), 
                         status='UPLOADED', timeStamp=datetime.now(),
-                        pathOriginal = UPLOAD_FOLDER, pathConverted = UPLOAD_FOLDER)
+                        pathOriginal = UPLOAD_FOLDER, pathConverted = PROCESSED_FOLDER)
         id_user = get_jwt_identity()
         print(new_Task)
         user = User.query.get_or_404(id_user)
@@ -151,7 +150,8 @@ class VistaTasks(Resource):
         task = Task.query.get_or_404(id_task)
         id_user = get_jwt_identity()
         filename = task.fileName
-        new_filename = filename.rsplit('.', 1)[0] + '.' + task.newFormat.name
+        # new_filename = filename.rsplit('.', 1)[0] + '.' + task.newFormat.name
+        new_filename = filename + '.' + task.newFormat.name
         
         #Se verifica que el archivo pertenezca a ese usuario
         if id_user != task.user:
@@ -159,6 +159,16 @@ class VistaTasks(Resource):
         else:
             if task.status == Status.PROCESSED: 
                 #Se revisa si el archivo existe
+                
+                # Validacion
+                print(os.path.join(task.pathOriginal, filename))
+                print(os.path.isfile(os.path.join(task.pathOriginal, filename)))
+                
+                print(os.path.join(task.pathConverted, new_filename))
+                print(os.path.isfile(os.path.join(task.pathConverted, new_filename)))
+                
+                ## Por corregir!
+                
                 if os.path.isfile(os.path.join(task.pathOriginal, filename)) and os.path.isfile(os.path.join(task.pathConverted, new_filename)):
                     #Eliminar archivos
                     os.remove(os.path.join(task.pathOriginal, filename))
@@ -189,4 +199,13 @@ class VistaFiles(Resource):
             else:    
                 return send_from_directory(os.path.join(UPLOAD_FOLDER), filename, as_attachment=True)
         else:
-            return "El archivo no existe", 400    
+            return "El archivo no existe", 400
+
+class VistaFrontEnd(Resource):
+    def __init__(self):
+        pass
+    def get(self):
+        headers = {'Content-Type':'text/html'}
+        return make_response(render_template('index.html'),
+                             200,
+                             headers)
