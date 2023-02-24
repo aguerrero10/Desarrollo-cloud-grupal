@@ -37,11 +37,11 @@ class VistaSignUp(Resource):
                     token_de_acceso = create_access_token(identity = id_user)
                     return {'mensaje':'usuario creado exitosamente','token_de_acceso':token_de_acceso,'id_user':id_user},201
                 else:
-                    return {'mensaje': 'Nombre de usuario ya registrado'}, 409
+                    return 'Nombre de usuario ya registrado', 409
             else: 
-                return {'mensaje': 'Correo ya registrado'}, 409
+                return 'Correo ya registrado', 409
         else: 
-            return {'mensaje':'Las contraseñas no coinciden'}, 409
+            return 'Las contraseñas no coinciden', 409
 
 
 class VistaLogIn(Resource):
@@ -114,7 +114,6 @@ class VistaTasksUser(Resource):
         print(get_jwt_identity())
 
         #Se genera la tarea con los datos del archivo
-        #Lo cambio por pruebas debe ser status='UPLOADED'
         new_Task = Task(fileName=filename, newFormat=request.form.get("newFormat"), 
                         status='UPLOADED', timeStamp=datetime.now(),
                         pathOriginal = UPLOAD_FOLDER, pathConverted = UPLOAD_FOLDER)
@@ -127,7 +126,7 @@ class VistaTasksUser(Resource):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return '', 409
+            return 'Error', 409
 
         return task_Schema.dump(new_Task)
 
