@@ -6,7 +6,7 @@ from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
 from apscheduler.schedulers.background import BackgroundScheduler
-from .tasks import sumar, compressfile, mail, enviarcorreo
+from .tasks import sumar, compressfile, mail
 import os
 
 

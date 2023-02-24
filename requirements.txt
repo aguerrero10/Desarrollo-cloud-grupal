@@ -1,6 +1,7 @@
 amqp==5.1.1
 aniso8601==9.0.1
 APScheduler==3.10.0
+async-timeout==4.0.2
 billiard==3.6.4.0
 blinker==1.5
 Brotli==1.0.9
@@ -29,6 +30,7 @@ multivolumefile==0.2.3
 packaging==23.0
 prompt-toolkit==3.0.36
 psutil==5.9.4
+psycopg2-binary==2.9.5
 py7zr==0.20.4
 pybcj==1.0.1
 pycryptodomex==3.17
@@ -37,6 +39,7 @@ pyppmd==1.0.0
 pytz==2022.7.1
 pytz-deprecation-shim==0.1.0.post0
 pyzstd==0.15.3
+redis==4.5.1
 six==1.16.0
 SQLAlchemy==2.0.1
 texttable==1.6.7

@@ -6,21 +6,23 @@ import os
 from os.path import basename
 
 from flask_mail import Mail, Message
+import psycopg2
+
 # Mail
 mail = Mail()
 
 app = Celery( 'tasks' , broker = 'redis://localhost:6379/0')
 # app = Celery( 'tasks' , broker = 'redis://localhost:6360/0')
 
-@app.task(name="sumar")
-def sumar():
-    print('Se sumaron los números')
-    print("3")
+# Funciones
+def enviarcorreo(correo_destino):
+    print('Enviando correo')
+    msg = Message(subject='Prueba 2!',
+                    recipients=[correo_destino],
+                    body = 'Se ha comprimido su archivo!'
+                    )
+    mail.send(msg)
 
-    return 1 + 2
-
-# Función asíncrona de compresión
-@app.task(name="compressfile")
 def compressfile(file_to_compress, ROOT_DIR, compression_type):
     source_file = os.path.join(ROOT_DIR, str(file_to_compress))
     
@@ -51,12 +53,63 @@ def compressfile(file_to_compress, ROOT_DIR, compression_type):
     else:
         print("Compression Type Unavailable")
 
-def enviarcorreo(correo_destino):
-    print('Enviando correo')
-    msg = Message(subject='Prueba 2!',
-                    recipients=[correo_destino],
-                    body = 'Se ha comprimido su archivo!'
-                    )
-    mail.send(msg)
+
+def compresion_correo():
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    # print(ROOT_DIR)
+    # Conexion a la base de datos
+    try:
+        connection = psycopg2.connect(
+            host='proyecto.ckh1hljhxmxq.us-east-1.rds.amazonaws.com',
+            user='postgres',
+            password='postgres',
+            database='tareas'
+        )
+        print("Conexion exitosa")
+        cursor = connection.cursor()
+        cursor.execute("""
+                    SELECT "fileName", "newFormat", status, "pathOriginal", "pathConverted", "user"
+                        FROM public.task
+                        WHERE status = 'UPLOADED';
+                    """)
+        rows = cursor.fetchall()
+        # print(rows[0])
+        for row in rows:
+            compressfile(file_to_compress = row[0],ROOT_DIR= ROOT_DIR, compression_type = row[1])
+            cursor.execute("""
+                        UPDATE public.task SET status='PROCESSED'
+                        WHERE "fileName"=%s;
+                        """, [row[0]])
+            connection.commit()
+            
+            # Correo del usuario:
+            cursor.execute("""
+                           SELECT email
+                           FROM public."user"
+                           WHERE id = %s;
+                           """, [row[5]])
+            correo = cursor.fetchall()
+            correo_destino = correo[0][0]
+            enviarcorreo(correo_destino=correo_destino)            
+            print('Correo enviado!')
+            
+    except Exception as ex:
+        print(ex)
+
+    finally:
+        connection.close()
+        print("Conexión finalizada")
+    
+
+@app.task(name="sumar")
+def sumar():
+    print('Se sumaron los números')
+    print("3")
+
+    return 1 + 2
+
+
+
+
     
     
