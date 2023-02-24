@@ -27,14 +27,16 @@ def enviarcorreo(correo_destino):
     # print('Se creo objeto mensaje')
     # mail.send(msg)
     # print('Se creo una instancia de mail')
-    
+       
+    # Define email sender and receiver
     email_sender = 'desarrollo.cloud.2023@gmail.com'
-    email_password = "rihmnrlonrsxhrat"
+    email_password = 'rihmnrlonrsxhrat'
     email_receiver = correo_destino
 
-    subject = 'Mensaje de prueba'
+    # Set the subject and body of the email
+    subject = 'Tarea procesada'
     body = """
-    Esto es una prueba!!
+    Se ha comprimido exitosamente su archivo!
     """
 
     em = EmailMessage()
@@ -43,10 +45,11 @@ def enviarcorreo(correo_destino):
     em['Subject'] = subject
     em.set_content(body)
 
+    # Add SSL (layer of security)
     context = ssl.create_default_context()
-
     print('Se creo objeto mensaje')
-    with smtplib.SMTP_SSL('smtp.gmail.com', 456, context=context) as smtp:
+    # Log in and send the email
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
         smtp.login(email_sender, email_password)
         smtp.sendmail(email_sender, email_receiver, em.as_string())
     print('Se creo una instancia de mail')
