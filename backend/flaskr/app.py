@@ -1,12 +1,13 @@
 from flaskr import create_app
 from flask_restful import Api
-from .models import db
+from .models import db, Task, Status
 from .views import VistaSignUp, VistaLogIn, VistaTasks, VistaTasksUser, VistaFiles
 from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
 from apscheduler.schedulers.background import BackgroundScheduler
-from .tasks import sumar
+from .tasks import sumar, compressfile
+import os
 
 
 app = create_app('default')
@@ -29,14 +30,26 @@ api.add_resource(VistaFiles, '/api/files/<filename>')
 # Inicializar la instancia de JWTManager para manejo de tokens
 jwt = JWTManager(app)
 
-# Schedule
+
+# Función llamada por el job scheduler
+# Llama a la función asíncrona de compresión
 def calling_async():
     print("Trabajando...")
     sumar.delay()
+    
+    #files = db.session.query(Task).all()
+    #for file in files:
+    #    print(file.status)
+    #ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    #compressfile.delay()
 
+
+# Job que se ejecuta cada minuto para enviar a comprimir los archivos
+# Llama a la función "calling_async"
 scheduler = BackgroundScheduler()
 job = scheduler.add_job(calling_async, 'interval', minutes=1)
 scheduler.start()
+
 
 # Pequeño metodo para que en la aplicación para debuggear
 logging.basicConfig(level=logging.DEBUG, 
