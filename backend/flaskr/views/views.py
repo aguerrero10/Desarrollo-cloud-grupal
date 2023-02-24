@@ -8,7 +8,7 @@ from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identi
 from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 from ..tasks import sumar
-#from ..app import sumar
+#from app import sumar
 
 
 UPLOAD_FOLDER = './'
@@ -55,8 +55,8 @@ class VistaLogIn(Resource):
         if user:
                 id_user = user[0].id
                 token_de_acceso = create_access_token(id_user)
-                #
-                #sumar.delay(1,2)
+                # Llamado de tarea ascíncrona con Celery y Redis
+                sumar.delay()
                 #
                 return {'mensaje':'Inicio de sesión exitoso','token_de_acceso':token_de_acceso,'id_user':id_user}, 200
         else:
