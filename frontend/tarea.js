@@ -2,12 +2,26 @@ const tarea={template:`
 <div>
 
 <button type="button"
-class="btn btn-primary m-2 fload-end"
+class="btn btn-primary fload-end"
 data-bs-toggle="modal"
 data-bs-target="#exampleModal"
 @click="addClick()">
  Nueva Tarea
 </button>
+
+<h2></h2>
+
+<div class="input-group mb-3">
+    <span class="input-group-text">Orden</span>
+    <select class="form-select" v-model="TareasOrden">
+        <option value="0">Ascendente</option>
+        <option value="1">Descendente</option>
+    </select>
+    <span class="input-group-text">Límite</span>
+    <input type="number" class="form-control" v-model="TareasLimite">
+    <button class="btn btn-secondary " type="button" id="button-addon2" @click="refreshData()">Aplicar</button>
+    <button class="btn btn-secondary " type="button" id="button-addon2" @click="clearFilter()">Limpiar</button>
+</div>
 
 <table class="table table-striped">
 <thead>
@@ -84,13 +98,13 @@ class="btn btn-secondary m-2 fload-end"
 
     <div class="modal-body">
 
-        <div class="mb-3">
+        <div class="mb-3" v-if="TareaId==0">
         <label for="formFile" class="form-label">Seleccionar archivo a comprimir</label>
         <!--input class="form-control" type="file" id="formFile" v-model="TareaName"-->
         <input class="form-control" type="file" id="formFile" ref="file" v-on:change="handleFileUpload()">
         </div>
 
-        <div class="input-group mb-3">
+        <div class="input-group mb-3" v-if="TareaId==0">
             <span class="input-group-text">Nuevo Formato</span>
             <select class="form-select" v-model="TareaNuevoFormato">
                 <option value="ZIP">ZIP</option>
@@ -99,13 +113,40 @@ class="btn btn-secondary m-2 fload-end"
             </select>
         </div>
 
+        <div class="input-group mb-3" v-if="TareaId!=0">
+            <span class="input-group-text">Archivo</span>
+            <input type="text" class="form-control" v-model="TareaName" readonly>
+        </div>
+
+        <div class="input-group mb-3" v-if="TareaId!=0">
+            <span class="input-group-text">Nuevo formato</span>
+            <input type="text" class="form-control" v-model="TareaNuevoFormato" readonly>
+        </div>
+
+        <div class="input-group mb-3" v-if="TareaId!=0">
+            <span class="input-group-text">Fecha solicitud</span>
+            <input type="text" class="form-control" v-model="TareaFecha" readonly>
+        </div>
+
+        <div class="input-group mb-3" v-if="TareaId!=0">
+            <span class="input-group-text">Estado</span>
+            <input type="text" class="form-control" v-model="TareaEstado" readonly>
+        </div>
+
         <button type="button" @click="createClick()"
         v-if="TareaId==0" class="btn btn-primary">
         Crear tarea
         </button>
-        <button type="button" @click="downloadFile()"
+
+        <button type="button" class="btn btn-primary m-2 fload-end" @click="downloadFile('ORIGINAL')"
         v-if="TareaId!=0" class="btn btn-primary">
         Descargar original
+        </button>
+
+        <!--PROCESSED, UPLOADED-->
+        <button type="button" class="btn btn-primary m-2 fload-end" @click="downloadFile('COMPRIMIDO')"
+        v-if="TareaId!=0 && TareaEstado=='PROCESSED'" class="btn btn-primary">
+        Descargar comprimido
         </button>
 
     </div>
@@ -131,6 +172,8 @@ data(){
         TareaFecha:"",
         usuario:0,
         file:[],
+        TareasOrden:"",
+        TareasLimite:"",
 
         TareaNameFilter:"",
         TareaIdFilter:"",
@@ -142,7 +185,11 @@ methods:{
         this.file = this.$refs.file.files[0];
     },
     refreshData(){
-        axios.get(variables.API_URL+"tasks",{
+        const params = {}
+        if (this.TareasOrden != "") { params.order = this.TareasOrden }
+        if (this.TareasLimite != "") { params.max = this.TareasLimite }
+
+        axios.get(variables.API_URL+"tasks",{params,
             headers: {
                 'Authorization': 'Bearer '+ sessionStorage.getItem('access_token')
             }
@@ -167,6 +214,8 @@ methods:{
         this.TareaId=dep.id;
         this.TareaName=dep.fileName;
         this.TareaNuevoFormato=dep.newFormat.llave;
+        this.TareaEstado=dep.status.llave;
+        this.TareaFecha=dep.timeStamp;
     },
     createClick(){
         let formData = new FormData();
@@ -223,12 +272,19 @@ methods:{
             alert(error.response.data)
         });
     },
-    downloadFile(){
-        //const FileDownload = require('js-file-download');
-
+    downloadFile(tipo_archivo){
         //axios.get(variables.API_URL+"files/"+"Cronograma_AML_202310.pdf",{ 
+        if (tipo_archivo == 'COMPRIMIDO'){
+            extension = ''
+            if (this.TareaNuevoFormato == 'ZIP') {extension = 'zip'}
+            else if (this.TareaNuevoFormato == 'SEVENZIP') {extension = '7z'}
+            else if (this.TareaNuevoFormato == 'TARBZ2') {extension = 'tar.bz2'}
+            download_filename = this.TareaName.split('.')[0] + '.' + extension //.toLowerCase()
+        } else {
+            download_filename = this.TareaName;
+        }
 
-        download_filename = this.TareaName;
+        //download_filename = this.TareaName;
         axios.get(variables.API_URL+"files/"+download_filename,{
             headers: {
                 'Authorization': 'Bearer '+ sessionStorage.getItem('access_token') 
@@ -255,6 +311,11 @@ methods:{
     signupClick(){
         sessionStorage.setItem('usuario', 0);
         this.$router.push("/usuario");
+    },
+    clearFilter(){
+        this.TareasOrden = "";
+        this.TareasLimite = "";
+        this.refreshData();
     }
 
 },
