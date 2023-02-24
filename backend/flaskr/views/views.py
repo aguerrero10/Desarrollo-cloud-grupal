@@ -204,6 +204,8 @@ class VistaFiles(Resource):
             #Se retorna el archivo si este existe
             if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
                 return send_from_directory(os.path.join(UPLOAD_FOLDER), filename, as_attachment=True)
+            elif os.path.isfile(os.path.join(PROCESSED_FOLDER, filename)):
+                return send_from_directory(os.path.join(PROCESSED_FOLDER), filename, as_attachment=True)
             else:
                 return "El archivo no existe", 400
             
