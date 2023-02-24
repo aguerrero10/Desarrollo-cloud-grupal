@@ -4,6 +4,9 @@ import tarfile
 import py7zr
 import os
 from os.path import basename
+from email.message import EmailMessage
+import ssl
+import smtplib
 
 from flask_mail import Mail, Message
 import psycopg2
@@ -11,24 +14,51 @@ import psycopg2
 # Mail
 mail = Mail()
 
-app = Celery( 'tasks' , broker = 'redis://localhost:6379/0')
-# app = Celery( 'tasks' , broker = 'redis://localhost:6360/0')
+# app = Celery( 'tasks' , broker = 'redis://localhost:6379/0')
+app = Celery( 'tasks' , broker = 'redis://localhost:6360/0')
 
 # Funciones
 def enviarcorreo(correo_destino):
-    print('Enviando correo')
-    msg = Message(subject='Prueba 2!',
-                    recipients=[correo_destino],
-                    body = 'Se ha comprimido su archivo!'
-                    )
-    mail.send(msg)
+    # print('Enviando correo')
+    # msg = Message(subject='Prueba 2!',
+    #                 recipients=[correo_destino],
+    #                 body = 'Se ha comprimido su archivo!'
+    #                 )
+    # print('Se creo objeto mensaje')
+    # mail.send(msg)
+    # print('Se creo una instancia de mail')
+    
+    email_sender = 'desarrollo.cloud.2023@gmail.com'
+    email_password = "rihmnrlonrsxhrat"
+    email_receiver = correo_destino
+
+    subject = 'Mensaje de prueba'
+    body = """
+    Esto es una prueba!!
+    """
+
+    em = EmailMessage()
+    em['From'] = email_sender
+    em['To'] = email_receiver
+    em['Subject'] = subject
+    em.set_content(body)
+
+    context = ssl.create_default_context()
+
+    print('Se creo objeto mensaje')
+    with smtplib.SMTP_SSL('smtp.gmail.com', 456, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
+    print('Se creo una instancia de mail')
 
 def compressfile(file_to_compress, ROOT_DIR, compression_type):
-    source_file = os.path.join(ROOT_DIR, str(file_to_compress))
+    PROCESSED_FOLDER = os.path.join(ROOT_DIR,'files/uploads/')
+    source_file = os.path.join(PROCESSED_FOLDER, str(file_to_compress))
+    
     
     if(compression_type == "ZIP"):
         try:
-            out_file = os.path.join(ROOT_DIR, str(file_to_compress) + ".zip")
+            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(file_to_compress) + ".zip")
             with zipfile.ZipFile(out_file, mode="w") as archive:
                 archive.write(source_file, basename(source_file), compress_type=zipfile.ZIP_DEFLATED)
         except zipfile.BadZipFile as error:
@@ -36,7 +66,7 @@ def compressfile(file_to_compress, ROOT_DIR, compression_type):
     
     elif (compression_type == "SEVENZIP"):
         try:
-            out_file = os.path.join(ROOT_DIR, str(file_to_compress) + ".7z")
+            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(file_to_compress) + ".7z")
             with py7zr.SevenZipFile(out_file, "w") as archive:
                 archive.writeall(source_file, basename(source_file))
         except py7zr.Bad7zFile as error:
@@ -44,7 +74,7 @@ def compressfile(file_to_compress, ROOT_DIR, compression_type):
     
     elif (compression_type == "TARBZ2"):
         try:
-            out_file = os.path.join(ROOT_DIR, str(file_to_compress) + ".tar.bz2")
+            out_file = os.path.join(ROOT_DIR, 'files/compressed/', str(file_to_compress) + ".tar.bz2")
             with tarfile.open(out_file, "w:bz2") as archive:
                 archive.add(source_file, basename(source_file))
         except tarfile.TarError as error:
@@ -56,6 +86,7 @@ def compressfile(file_to_compress, ROOT_DIR, compression_type):
 
 def compresion_correo():
     ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
     # print(ROOT_DIR)
     # Conexion a la base de datos
     try:
@@ -76,6 +107,8 @@ def compresion_correo():
         # print(rows[0])
         for row in rows:
             compressfile(file_to_compress = row[0],ROOT_DIR= ROOT_DIR, compression_type = row[1])
+            
+            # Actualización del estado
             cursor.execute("""
                         UPDATE public.task SET status='PROCESSED'
                         WHERE "fileName"=%s;
@@ -108,8 +141,12 @@ def sumar():
 
     return 1 + 2
 
-
-
+@app.task(name="tareacompresion")
+def tareacompresion():
+    print('Validacion antes:')
+    compresion_correo()
+    print('tarea finalizada')
+    
 
     
     
