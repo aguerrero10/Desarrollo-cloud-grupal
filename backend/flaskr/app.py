@@ -6,6 +6,7 @@ from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
 from apscheduler.schedulers.background import BackgroundScheduler
+from .tasks import sumar
 
 
 app = create_app('default')
@@ -25,12 +26,19 @@ api.add_resource(VistaTasks, '/api/tasks/<int:id_task>')
 api.add_resource(VistaTasksUser, '/api/tasks')
 api.add_resource(VistaFiles, '/api/files/<filename>')
 
-#Inicializar la instancia de JWTManager para manejo de tokens
+# Inicializar la instancia de JWTManager para manejo de tokens
 jwt = JWTManager(app)
 
+# Schedule
+def calling_async():
+    print("Trabajando...")
+    sumar.delay()
 
+scheduler = BackgroundScheduler()
+job = scheduler.add_job(calling_async, 'interval', minutes=1)
+scheduler.start()
 
-#Pequeño metodo para que en la aplicación para debuggear
+# Pequeño metodo para que en la aplicación para debuggear
 logging.basicConfig(level=logging.DEBUG, 
                     format='%(asctime)s %(levelname)s %(message)s',
                     handlers=[logging.StreamHandler()])

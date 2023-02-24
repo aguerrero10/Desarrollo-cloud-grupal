@@ -8,7 +8,6 @@ from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identi
 from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 from ..tasks import sumar
-#from app import sumar
 
 
 UPLOAD_FOLDER = './'
