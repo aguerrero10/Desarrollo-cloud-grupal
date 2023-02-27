@@ -14,6 +14,8 @@ Los endpoints desarrolaldos se encuentran documentados a través de la aplicaci�
 Podrá encontrar el documento en el siguiente vínculo:
 https://documenter.getpostman.com/view/13843294/2s93CPrY2y
 
+El documento Entrega 1 - Arquitectura, conclusiones y consideraciones.pdf se encuentra dentro del repositorio
+
 # Video sustentación
 El video puede ser encontrado en la carpeta video en este repositorio o en el siguiente enlace:
 https://youtu.be/hmUve_XsaHE
