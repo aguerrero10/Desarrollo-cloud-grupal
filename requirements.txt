@@ -30,7 +30,7 @@ multivolumefile==0.2.3
 packaging==23.0
 prompt-toolkit==3.0.36
 psutil==5.9.4
-psycopg2-binary==2.8.5
+psycopg2-binary
 py7zr==0.20.4
 pybcj==1.0.1
 pycryptodomex==3.17
