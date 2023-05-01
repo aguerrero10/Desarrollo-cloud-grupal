@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import request, send_from_directory, make_response, render_template
+from flask import request, send_from_directory, make_response, render_template, send_file
 from ..models import db, User, UserSchema, Task, TaskSchema, Status
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
@@ -8,11 +8,14 @@ from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identi
 from werkzeug.exceptions import HTTPException
 from werkzeug.utils import secure_filename
 from ..tasks import sumar, compresion_correo
+from google.cloud import storage
+from ..storage import upload_file_bucket, download_file_bucket, delete_file_bucket, exists_file_bucket
+
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-UPLOAD_FOLDER = os.path.join(ROOT_DIR,'files/uploads/' )
-PROCESSED_FOLDER = os.path.join(ROOT_DIR,'files/compressed/' )
+UPLOAD_FOLDER = os.path.join('files/uploads/')
+PROCESSED_FOLDER = os.path.join('files/compressed/')
 
 user_Schema = UserSchema()
 task_Schema = TaskSchema()
@@ -105,12 +108,15 @@ class VistaTasksUser(Resource):
             return 'No se permiten subdirectorios', 400
 
         if file:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(UPLOAD_FOLDER, filename))  #app.config['UPLOAD_FOLDER']
+            try:
+                filename = secure_filename(file.filename)
+                upload_file_bucket(file, os.path.join(UPLOAD_FOLDER, filename)) 
+            except Exception as e:
+                return 'No se pudo cargar el archivo', 500
+            
         else:
             return 'No se envió un archivo para comprimir', 400
         
-        print(get_jwt_identity())
 
         #Se genera la tarea con los datos del archivo
         new_Task = Task(fileName=filename, newFormat=request.form.get("newFormat"), 
@@ -125,7 +131,7 @@ class VistaTasksUser(Resource):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            return 'Error', 409
+            return 'Error de integridad de datos', 409
 
         return task_Schema.dump(new_Task)
 
@@ -158,23 +164,11 @@ class VistaTasks(Resource):
             return "Usted no tiene permisos para ver esta tarea", 400
         else:
             if task.status == Status.PROCESSED: 
-                #Se revisa si el archivo existe
-                UPLOAD_FOLDER
-
-
-                # Validacion
-                print(os.path.join(task.pathOriginal, filename))
-                print(os.path.isfile(os.path.join(task.pathOriginal, filename)))
-                
-                print(os.path.join(task.pathConverted, new_filename))
-                print(os.path.isfile(os.path.join(task.pathConverted, new_filename)))
-                
-                ## 
-                
-                if os.path.isfile(os.path.join(task.pathOriginal, filename)) and os.path.isfile(os.path.join(task.pathConverted, new_filename)):
+                # Validacion de que el archivo exista
+                if exists_file_bucket(os.path.join(task.pathOriginal, filename)) and exists_file_bucket(os.path.join(task.pathConverted, new_filename)):
                     #Eliminar archivos
-                    os.remove(os.path.join(task.pathOriginal, filename))
-                    os.remove(os.path.join(task.pathConverted, new_filename))
+                    delete_file_bucket(os.path.join(task.pathOriginal, filename))
+                    delete_file_bucket(os.path.join(task.pathConverted, new_filename))
 
                     #Eliminar task de DB
                     db.session.delete(task)
@@ -184,7 +178,7 @@ class VistaTasks(Resource):
                     return "El archivo no existe", 400
             else: 
                 
-                return "El archivo no esta procesado", 400
+                return "El archivo aún no ha sido procesado", 400
 
     
 class VistaFiles(Resource):
@@ -202,10 +196,10 @@ class VistaFiles(Resource):
             return "Usted no tiene permisos para descargar el archivo", 400
         else:
             #Se retorna el archivo si este existe
-            if os.path.isfile(os.path.join(UPLOAD_FOLDER, filename)):
-                return send_from_directory(os.path.join(UPLOAD_FOLDER), filename, as_attachment=True)
-            elif os.path.isfile(os.path.join(PROCESSED_FOLDER, filename)):
-                return send_from_directory(os.path.join(PROCESSED_FOLDER), filename, as_attachment=True)
+            if exists_file_bucket(os.path.join(UPLOAD_FOLDER, filename)):
+                return send_file(download_file_bucket(os.path.join(UPLOAD_FOLDER, filename)), as_attachment=True, download_name=filename)
+            elif exists_file_bucket(os.path.join(PROCESSED_FOLDER, filename)):
+                return send_file(download_file_bucket(os.path.join(PROCESSED_FOLDER, filename)), as_attachment=True, download_name=filename)
             else:
                 return "El archivo no existe", 400
             
