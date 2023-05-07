@@ -98,6 +98,10 @@ class VistaTasksUser(Resource):
     #/api/tasks
     #Metodo POST: añade un archivo y tarea de compresion a la DB
     def post(self):
+        #Capturar el id del usuario
+        id_user = get_jwt_identity()
+        new_format = request.form.get("newFormat")
+
         #Se revisa si se envió un archivo para comprimir
         if 'fileName' not in request.files:
             return 'No se envió un archivo para comprimir', 400
@@ -110,19 +114,17 @@ class VistaTasksUser(Resource):
         if file:
             try:
                 filename = secure_filename(file.filename)
-                upload_file_bucket(file, os.path.join(UPLOAD_FOLDER, filename)) 
+                upload_file_bucket(file, os.path.join(UPLOAD_FOLDER, filename), id_user, new_format) 
             except Exception as e:
-                return 'No se pudo cargar el archivo', 500
-            
+                return 'No se pudo cargar el archivo', 500            
         else:
             return 'No se envió un archivo para comprimir', 400
         
 
         #Se genera la tarea con los datos del archivo
-        new_Task = Task(fileName=filename, newFormat=request.form.get("newFormat"), 
+        new_Task = Task(fileName=filename, newFormat=new_format, 
                         status='UPLOADED', timeStamp=datetime.now(),
                         pathOriginal = UPLOAD_FOLDER, pathConverted = PROCESSED_FOLDER)
-        id_user = get_jwt_identity()
         print(new_Task)
         user = User.query.get_or_404(id_user)
         user.tasks.append(new_Task)

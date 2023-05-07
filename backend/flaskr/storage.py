@@ -8,10 +8,13 @@ path_to_private_key = './dsc-proyecto-b6565f206c96.json'
 
 #Cargar un archivo en cloud storage
 #Recibe file (en formato bytes) y la ruta/nombre donde debe almacenarse
-def upload_file_bucket(file, blob_name):
+def upload_file_bucket(file, blob_name, id_user, new_format):
     client = storage.Client.from_service_account_json(json_credentials_path=path_to_private_key)
     bucket = storage.Bucket(client, bucket_name)
     blob = bucket.blob(blob_name)
+
+    metadata = {'id_usuario':id_user, 'new_format':new_format}
+    blob.metadata = metadata
 
     blob.upload_from_file(file, content_type=file.content_type)
 
