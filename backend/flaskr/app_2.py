@@ -12,8 +12,8 @@ from .views import (
 from flask_cors import CORS
 import logging
 from flask_jwt_extended import JWTManager
-#from apscheduler.schedulers.background import BackgroundScheduler
-#from .tasks import sumar, tareacompresion, mail
+from apscheduler.schedulers.background import BackgroundScheduler
+from .tasks import sumar, tareacompresion, mail
 import os
 
 
@@ -29,7 +29,7 @@ cors = CORS(app)
 api = Api(app)
 
 # Mail
-#mail.init_app(app)
+mail.init_app(app)
 
 api.add_resource(VistaSignUp, '/api/auth/signup')
 api.add_resource(VistaLogIn, '/api/auth/login')
@@ -46,20 +46,20 @@ jwt = JWTManager(app)
 
 # Función llamada por el job scheduler
 # Llama a la función asíncrona de compresión
-#def calling_async():
-#    print("Trabajando...")
-#    sumar.delay()
-#    tareacompresion.delay()
+def calling_async():
+    print("Trabajando...")
+    sumar.delay()
+    tareacompresion.delay()
 
 # Job que se ejecuta cada minuto para enviar a comprimir los archivos
 # Llama a la función "calling_async"
-#scheduler = BackgroundScheduler()
-#job = scheduler.add_job(calling_async, 'interval', minutes=1)
-#scheduler.start()
+scheduler = BackgroundScheduler()
+job = scheduler.add_job(calling_async, 'interval', minutes=1)
+scheduler.start()
 
 
 # Pequeño metodo para que en la aplicación para debuggear
-#logging.basicConfig(level=logging.DEBUG, 
-#                    format='%(asctime)s %(levelname)s %(message)s',
-#                    handlers=[logging.StreamHandler()])
+logging.basicConfig(level=logging.DEBUG, 
+                    format='%(asctime)s %(levelname)s %(message)s',
+                    handlers=[logging.StreamHandler()])
 
