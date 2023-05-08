@@ -14,9 +14,11 @@ Los endpoints desarrolaldos se encuentran documentados a través de la aplicaci�
 Podrá encontrar el documento en el siguiente vínculo:
 https://documenter.getpostman.com/view/13843294/2s93CPrY2y
 
-El documento Entrega 1 - Arquitectura, conclusiones y consideraciones.pdf se encuentra dentro del repositorio
+El documento [Entrega 4 - Arquitectura, conclusiones y consideraciones.pdf](https://github.com/aguerrero10/Desarrollo-cloud-grupal/blob/vm_gcp/Documentacion/Entrega%204%20-%20Arquitectura%2C%20conclusiones%20y%20consideraciones.pdf) se encuentra dentro del repositorio
 
 # Video sustentación
 El video puede ser encontrado en la carpeta video en este repositorio o en el siguiente enlace:
-https://youtu.be/hmUve_XsaHE
+https://youtu.be/mubO9ihz5mg
 
+# Código de la entrega 4
+Consultar carpeta [flaskr](https://github.com/aguerrero10/Desarrollo-cloud-grupal/tree/vm_gcp/backend/flaskr)

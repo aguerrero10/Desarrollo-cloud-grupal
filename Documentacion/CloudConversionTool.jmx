@@ -12,13 +12,13 @@
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group - Users Signup" enabled="true">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group - Users Signup" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">1</stringProp>
+          <stringProp name="LoopController.loops">1000</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.num_threads">15</stringProp>
         <stringProp name="ThreadGroup.ramp_time">1</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -35,13 +35,13 @@
             </elementProp>
             <elementProp name="url" elementType="Argument">
               <stringProp name="Argument.name">url</stringProp>
-              <stringProp name="Argument.value">34.75.54.47</stringProp>
+              <stringProp name="Argument.value">34.160.91.215</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
               <stringProp name="Argument.desc">localhost</stringProp>
             </elementProp>
             <elementProp name="port" elementType="Argument">
               <stringProp name="Argument.name">port</stringProp>
-              <stringProp name="Argument.value">5000</stringProp>
+              <stringProp name="Argument.value">80</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
               <stringProp name="Argument.desc">3001</stringProp>
             </elementProp>
@@ -54,13 +54,13 @@
         </Arguments>
         <hashTree/>
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
-          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="delimiter">;</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
-          <stringProp name="filename">TestData</stringProp>
+          <stringProp name="filename">TestData.csv</stringProp>
           <boolProp name="ignoreFirstLine">true</boolProp>
           <boolProp name="quotedData">false</boolProp>
           <boolProp name="recycle">false</boolProp>
-          <stringProp name="shareMode">shareMode.thread</stringProp>
+          <stringProp name="shareMode">shareMode.group</stringProp>
           <boolProp name="stopThread">true</boolProp>
           <stringProp name="variableNames">username,password,email</stringProp>
         </CSVDataSet>
@@ -72,10 +72,10 @@
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">{&#xd;
-    &quot;username&quot;: &quot;demo&quot;,&#xd;
-    &quot;password1&quot;: &quot;1234&quot;,&#xd;
-    &quot;password2&quot;: &quot;1234&quot;,&#xd;
-    &quot;email&quot;: &quot;demo@hotmail.com&quot;&#xd;
+    &quot;username&quot;: &quot;${username}&quot;,&#xd;
+    &quot;password1&quot;: &quot;${password}&quot;,&#xd;
+    &quot;password2&quot;: &quot;${password}&quot;,&#xd;
+    &quot;email&quot;: &quot;${email}&quot;&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -215,13 +215,13 @@ log.info(access)</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group - Tasks creation" enabled="true">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group - Tasks creation" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">1</stringProp>
+          <stringProp name="LoopController.loops">1000</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.num_threads">10</stringProp>
         <stringProp name="ThreadGroup.ramp_time">1</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -238,13 +238,13 @@ log.info(access)</stringProp>
             </elementProp>
             <elementProp name="url" elementType="Argument">
               <stringProp name="Argument.name">url</stringProp>
-              <stringProp name="Argument.value">34.75.54.47</stringProp>
+              <stringProp name="Argument.value">34.160.91.215</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
               <stringProp name="Argument.desc">localhost</stringProp>
             </elementProp>
             <elementProp name="port" elementType="Argument">
               <stringProp name="Argument.name">port</stringProp>
-              <stringProp name="Argument.value">5000</stringProp>
+              <stringProp name="Argument.value">80</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
               <stringProp name="Argument.desc">3001</stringProp>
             </elementProp>
@@ -257,13 +257,13 @@ log.info(access)</stringProp>
         </Arguments>
         <hashTree/>
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
-          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="delimiter">;</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
-          <stringProp name="filename">TestData</stringProp>
+          <stringProp name="filename">TestTasksData.csv</stringProp>
           <boolProp name="ignoreFirstLine">true</boolProp>
           <boolProp name="quotedData">false</boolProp>
           <boolProp name="recycle">false</boolProp>
-          <stringProp name="shareMode">shareMode.thread</stringProp>
+          <stringProp name="shareMode">shareMode.group</stringProp>
           <boolProp name="stopThread">true</boolProp>
           <stringProp name="variableNames">username,password,format</stringProp>
         </CSVDataSet>
@@ -275,8 +275,8 @@ log.info(access)</stringProp>
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">{&#xd;
-    &quot;username&quot;: &quot;Pepito&quot;,&#xd;
-    &quot;password&quot;: &quot;1234&quot;&#xd;
+    &quot;username&quot;: &quot;${username}&quot;,&#xd;
+    &quot;password&quot;: &quot;${password}&quot;&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -383,9 +383,9 @@ log.info(access)</stringProp>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Request - PostTask" enabled="true">
           <elementProp name="HTTPsampler.Files" elementType="HTTPFileArgs">
             <collectionProp name="HTTPFileArgs.files">
-              <elementProp name="C:\Users\sword\Downloads\Free_Test_Data_10.5MB_PDF.pdf" elementType="HTTPFileArg">
+              <elementProp name="C:\Users\sword\Downloads\TestFile.txt" elementType="HTTPFileArg">
                 <stringProp name="File.mimetype">application/pdf</stringProp>
-                <stringProp name="File.path">C:\Users\sword\Downloads\Free_Test_Data_10.5MB_PDF.pdf</stringProp>
+                <stringProp name="File.path">C:\Users\sword\Downloads\TestFile.txt</stringProp>
                 <stringProp name="File.paramname">fileName</stringProp>
               </elementProp>
             </collectionProp>
@@ -394,7 +394,7 @@ log.info(access)</stringProp>
             <collectionProp name="Arguments.arguments">
               <elementProp name="newFormat" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">ZIP</stringProp>
+                <stringProp name="Argument.value">${format}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">newFormat</stringProp>
@@ -523,13 +523,13 @@ log.info(access)</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group - Download converted files" enabled="true">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group - Download converted files" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">1</stringProp>
+          <stringProp name="LoopController.loops">10</stringProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.num_threads">2</stringProp>
         <stringProp name="ThreadGroup.ramp_time">1</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
@@ -546,13 +546,13 @@ log.info(access)</stringProp>
             </elementProp>
             <elementProp name="url" elementType="Argument">
               <stringProp name="Argument.name">url</stringProp>
-              <stringProp name="Argument.value">34.75.54.47</stringProp>
+              <stringProp name="Argument.value">34.160.91.215</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
               <stringProp name="Argument.desc">localhost</stringProp>
             </elementProp>
             <elementProp name="port" elementType="Argument">
               <stringProp name="Argument.name">port</stringProp>
-              <stringProp name="Argument.value">5000</stringProp>
+              <stringProp name="Argument.value">80</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
               <stringProp name="Argument.desc">3001</stringProp>
             </elementProp>
@@ -565,26 +565,26 @@ log.info(access)</stringProp>
         </Arguments>
         <hashTree/>
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
-          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="delimiter">;</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
-          <stringProp name="filename">TestData</stringProp>
+          <stringProp name="filename">TestTasksData.csv</stringProp>
           <boolProp name="ignoreFirstLine">true</boolProp>
           <boolProp name="quotedData">false</boolProp>
           <boolProp name="recycle">false</boolProp>
-          <stringProp name="shareMode">shareMode.thread</stringProp>
+          <stringProp name="shareMode">shareMode.group</stringProp>
           <boolProp name="stopThread">true</boolProp>
           <stringProp name="variableNames">username,password,format</stringProp>
         </CSVDataSet>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Request - Login" enabled="false">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Request - Login" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">{&#xd;
-    &quot;username&quot;: &quot;Pepito&quot;,&#xd;
-    &quot;password&quot;: &quot;1234&quot;&#xd;
+    &quot;username&quot;: &quot;${username}&quot;,&#xd;
+    &quot;password&quot;: &quot;${password}&quot;&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -643,7 +643,7 @@ log.info(access)</stringProp>
           </JSR223PostProcessor>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Request - GetTasks" enabled="false">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Request - GetTasks" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
