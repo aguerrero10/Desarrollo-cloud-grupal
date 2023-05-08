@@ -13,7 +13,7 @@ def upload_file_bucket(file, blob_name, id_user, new_format):
     bucket = storage.Bucket(client, bucket_name)
     blob = bucket.blob(blob_name)
 
-    metadata = {'id_usuario':id_user, 'new_format':new_format}
+    metadata = {'id_user':id_user, 'new_format':new_format}
     blob.metadata = metadata
 
     blob.upload_from_file(file, content_type=file.content_type)
