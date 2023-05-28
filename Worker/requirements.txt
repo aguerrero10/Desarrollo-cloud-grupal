@@ -1,0 +1,9 @@
+# Function dependencies, for example:
+# package>=version
+Flask==2.2.2
+google-cloud-storage==2.9.0
+cloud-sql-python-connector[pg8000]==1.2.2
+SQLAlchemy==2.0.1
+#PyMySQL==1.0.3
+pg8000==1.29.4
+py7zr==0.20.4
